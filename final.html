@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Data Example</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.2.7/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f7f9fc;
+            color: #333;
+        }
+        .navbar {
+            background-color: #1f2937;
+        }
+        .navbar-brand {
+            font-size: 1.75rem;
+            font-weight: bold;
+            color: #fff;
+        }
+        .search-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .search-input {
+            border-radius: 9999px;
+            padding: 0.75rem 3rem;
+            border: 1px solid #ccc;
+            transition: border-color 0.3s ease-in-out;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #1f2937;
+        }
+        .search-wrapper .fa-search {
+            position: absolute;
+            top: 50%;
+            left: 1rem;
+            transform: translateY(-50%);
+            color: #6c757d;
+        }
+        .search-wrapper .btn-search {
+            position: absolute;
+            top: 50%;
+            right: 1rem;
+            transform: translateY(-50%);
+            border-radius: 9999px;
+            border: none;
+            background-color: #1f2937;
+            color: #fff;
+            transition: background-color 0.3s ease-in-out;
+        }
+        .search-wrapper .btn-search:hover {
+            background-color: #111827;
+        }
+        .custom-table {
+            border-radius: 0.5rem;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .custom-table th, .custom-table td {
+            text-align: center;
+            vertical-align: middle;
+        }
+        .card {
+            border-radius: 1rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+        }
+        .alert {
+            margin-top: 1.5rem;
+        }
+        .xml-btn {
+            border-radius: 9999px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .btn-group .btn {
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar p-4 flex justify-center items-center">
+        <a class="navbar-brand" href="#">SHA-Business Analytics</a>
+    </nav>
+    
+    
+
+<div class="container mx-auto p-4">
+    <!-- Alert for table updates -->
+    <div id="alertContainer"></div>
+
+    <!-- Search and Filter Feature -->
+    <div class="flex justify-between items-center mb-4">
+        <div class="search-wrapper flex items-center flex-1 max-w-md">
+            <input type="text" class="search-input flex-1" id="searchInput" placeholder="Search employees or departments..." onkeyup="searchTable()">
+            <i class="fa fa-search text-gray-500"></i>
+            <button class="btn-search px-4 py-2" onclick="searchTable()">Search</button>
+        </div>
+        <div class="filter-wrapper ml-4">
+            <select id="filterDepartment" class="form-control bg-white border-gray-300 rounded-full px-4 py-2" onchange="filterTable()">
+                <option value="">All Departments</option>
+                <option value="IT">IT</option>
+                <option value="Marketing">Marketing</option>
+                <option value="Sales">Sales</option>
+                <option value="HR">HR</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Employees Section -->
+    <div id="employeesSection">
+        <h2 class="text-2xl font-semibold mb-3">Employees</h2>
+        <p id="employeesNotice" class="mb-3 text-red-600"></p>
+        <form id="employeeForm" class="mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <input type="text" id="empName" class="form-control bg-white border-gray-300 rounded-md px-4 py-2" placeholder="Name" required>
+                <input type="text" id="empPosition" class="form-control bg-white border-gray-300 rounded-md px-4 py-2" placeholder="Position" required>
+                <input type="text" id="empDepartment" class="form-control bg-white border-gray-300 rounded-md px-4 py-2" placeholder="Department" required>
+                <input type="number" id="empSalary" class="form-control bg-white border-gray-300 rounded-md px-4 py-2" placeholder="Salary" required>
+            </div>
+            <button type="button" class="btn mt-4 px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700" onclick="addRowToEmployees()">Add Employee</button>
+        </form>
+
+        <table id="employeesTable" class="table w-full custom-table border-collapse">
+            <thead>
+                <tr class="bg-gray-100 border-b">
+                    <th class="py-2 px-4 text-left">Name</th>
+                    <th class="py-2 px-4 text-left">Position</th>
+                    <th class="py-2 px-4 text-left">Department</th>
+                    <th class="py-2 px-4 text-left">Salary</th>
+                    <th class="py-2 px-4 text-left">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Sample Data -->
+                <tr class="border-b">
+                    <td class="py-2 px-4">John Doe</td>
+                    <td class="py-2 px-4">Software Engineer</td>
+                    <td class="py-2 px-4">IT</td>
+                    <td class="py-2 px-4">$80,000</td>
+                    <td class="py-2 px-4 text-center"><button class="bg-red-500 text-white px-3 py-1 rounded-full" onclick="deleteRow(this)"><i class='fas fa-trash'></i></button></td>
+                </tr>
+                <tr class="border-b">
+                    <td class="py-2 px-4">Shafee</td>
+                    <td class="py-2 px-4">CEO</td>
+                    <td class="py-2 px-4">Sales</td>
+                    <td class="py-2 px-4">$500,000</td>
+                    <td class="py-2 px-4 text-center"><button class="bg-red-500 text-white px-3 py-1 rounded-full" onclick="deleteRow(this)"><i class='fas fa-trash'></i></button></td>
+                </tr>
+                <!-- Additional rows here -->
+            </tbody>
+        </table>
+
+        <div class="flex justify-center mt-6">
+            <button class="bg-green-500 text-white px-4 py-2 rounded-full mr-2" onclick="exportTableToExcel('employeesTable', 'Employees')">Export Employees to Excel</button>
+            <button class="bg-blue-500 text-white px-4 py-2 rounded-full mr-2" onclick="generateXML('employeesTable', 'Employees')">Generate XML for Employees</button>
+            <button class="bg-blue-900 text-white px-4 py-2 rounded-full" onclick="showXML('employeesTable')">Show XML Data</button>
+        </div>
+    </div>
+
+    <!-- Departments Section -->
+    <div id="departmentsSection" class="mt-8">
+        <h2 class="text-2xl font-semibold mb-3">Departments</h2>
+        <p id="departmentsNotice" class="mb-3 text-red-600"></p>
+        <form id="departmentForm" class="mb-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <input type="text" id="deptName" class="form-control bg-white border-gray-300 rounded-md px-4 py-2" placeholder="Department Name" required>
+                <input type="text" id="deptManager" class="form-control bg-white border-gray-300 rounded-md px-4 py-2" placeholder="Manager" required>
+                <input type="number" id="deptBudget" class="form-control bg-white border-gray-300 rounded-md px-4 py-2" placeholder="Budget" required>
+            </div>
+            <button type="button" class="btn mt-4 px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700" onclick="addRowToDepartments()">Add Department</button>
+        </form>
+
+        <table id="departmentsTable" class="table w-full custom-table border-collapse">
+            <thead>
+                <tr class="bg-gray-100 border-b">
+                    <th class="py-2 px-4 text-left">Department Name</th>
+                    <th class="py-2 px-4 text-left">Manager</th>
+                    <th class="py-2 px-4 text-left">Budget</th>
+                    <th class="py-2 px-4 text-left">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Sample Data -->
+                <tr class="border-b">
+                    <td class="py-2 px-4">IT</td>
+                    <td class="py-2 px-4">Jane Smith</td>
+                    <td class="py-2 px-4">$1,000,000</td>
+                    <td class="py-2 px-4 text-center"><button class="bg-red-500 text-white px-3 py-1 rounded-full" onclick="deleteRow(this)"><i class='fas fa-trash'></i></button></td>
+                </tr>
+                <!-- Additional rows here -->
+            </tbody>
+        </table>
+
+        <div class="flex justify-center mt-6">
+            <button class="bg-green-500 text-white px-4 py-2 rounded-full mr-2" onclick="exportTableToExcel('departmentsTable', 'Departments')">Export Departments to Excel</button>
+            <button class="bg-blue-500 text-white px-4 py-2 rounded-full mr-2" onclick="generateXML('departmentsTable', 'Departments')">Generate XML for Departments</button>
+            <button class="bg-blue-900 text-white px-4 py-2 rounded-full" onclick="showXML('departmentsTable')">Show XML Data</button>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript Functions -->
+<script>
+    function addRowToEmployees() {
+        let empName = document.getElementById("empName").value;
+        let empPosition = document.getElementById("empPosition").value;
+        let empDepartment = document.getElementById("empDepartment").value;
+        let empSalary = document.getElementById("empSalary").value;
+
+        if (empName && empPosition && empDepartment && empSalary) {
+            let table = document.getElementById("employeesTable").getElementsByTagName('tbody')[0];
+            let newRow = table.insertRow();
+            newRow.innerHTML = `
+                <td class="py-2 px-4">\${empName}</td>
+                <td class="py-2 px-4">\${empPosition}</td>
+                <td class="py-2 px-4">\${empDepartment}</td>
+                <td class="py-2 px-4">\${empSalary}</td>
+                <td class="py-2 px-4 text-center"><button class="bg-red-500 text-white px-3 py-1 rounded-full" onclick="deleteRow(this)"><i class='fas fa-trash'></i></button></td>
+            `;
+            document.getElementById("employeesNotice").textContent = "";
+            document.getElementById("employeeForm").reset();
+        } else {
+            document.getElementById("employeesNotice").textContent = "Please fill in all fields to add an employee.";
+        }
+    }
+
+    function addRowToDepartments() {
+        let deptName = document.getElementById("deptName").value;
+        let deptManager = document.getElementById("deptManager").value;
+        let deptBudget = document.getElementById("deptBudget").value;
+
+        if (deptName && deptManager && deptBudget) {
+            let table = document.getElementById("departmentsTable").getElementsByTagName('tbody')[0];
+            let newRow = table.insertRow();
+            newRow.innerHTML = `
+                <td class="py-2 px-4">\${deptName}</td>
+                <td class="py-2 px-4">\${deptManager}</td>
+                <td class="py-2 px-4">\${deptBudget}</td>
+                <td class="py-2 px-4 text-center"><button class="bg-red-500 text-white px-3 py-1 rounded-full" onclick="deleteRow(this)"><i class='fas fa-trash'></i></button></td>
+            `;
+            document.getElementById("departmentsNotice").textContent = "";
+            document.getElementById("departmentForm").reset();
+        } else {
+            document.getElementById("departmentsNotice").textContent = "Please fill in all fields to add a department.";
+        }
+    }
+
+    function deleteRow(button) {
+        let row = button.closest('tr');
+        row.remove();
+        let alertContainer = document.getElementById("alertContainer");
+        alertContainer.innerHTML = "<div class='alert bg-red-500 text-white p-3 rounded'>Row deleted successfully!</div>";
+        setTimeout(() => alertContainer.innerHTML = "", 3000);
+    }
+
+    function searchTable() {
+        let input = document.getElementById("searchInput").value.toUpperCase();
+        let table = document.getElementById("employeesTable");
+        let tr = table.getElementsByTagName("tr");
+
+        for (let i = 0; i < tr.length; i++) {
+            let tdArray = tr[i].getElementsByTagName("td");
+            let found = false;
+
+            for (let j = 0; j < tdArray.length; j++) {
+                let td = tdArray[j];
+                if (td) {
+                    if (td.innerHTML.toUpperCase().indexOf(input) > -1) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+
+            tr[i].style.display = found ? "" : "none";
+        }
+    }
+
+    function filterTable() {
+        let input = document.getElementById("filterDepartment").value.toUpperCase();
+        let table = document.getElementById("employeesTable");
+        let tr = table.getElementsByTagName("tr");
+
+        for (let i = 0; i < tr.length; i++) {
+            let td = tr[i].getElementsByTagName("td")[2];
+            if (td) {
+                if (input === "" || td.innerHTML.toUpperCase() === input) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
+
+    function exportTableToExcel(tableID, filename = '') {
+        let table = document.getElementById(tableID);
+        let tableHTML = table.outerHTML.replace(/ /g, '%20');
+
+        let downloadLink = document.createElement("a");
+        document.body.appendChild(downloadLink);
+
+        filename = filename ? filename + '.xls' : 'excel_data.xls';
+
+        let dataType = 'application/vnd.ms-excel';
+        downloadLink.href = 'data:' + dataType + ', ' + tableHTML;
+        downloadLink.download = filename;
+        downloadLink.click();
+    }
+
+    function generateXML(tableID, rootName = 'Root') {
+        let table = document.getElementById(tableID);
+        let xml = '<?xml version="1.0" encoding="UTF-8"?><' + rootName + '>';
+
+        let headers = [];
+        for (let i = 0; i < table.rows[0].cells.length - 1; i++) {
+            headers[i] = table.rows[0].cells[i].innerText.trim().replace(/\s/g, '_');
+        }
+
+        for (let i = 1; i < table.rows.length; i++) {
+            let row = table.rows[i];
+            xml += '<Record>';
+            for (let j = 0; j < headers.length; j++) {
+                xml += '<' + headers[j] + '>';
+                xml += row.cells[j].innerText.trim();
+                xml += '</' + headers[j] + '>';
+            }
+            xml += '</Record>';
+        }
+
+        xml += '</' + rootName + '>';
+
+        let downloadLink = document.createElement("a");
+        document.body.appendChild(downloadLink);
+
+        downloadLink.href = 'data:text/xml;charset=utf-8,' + encodeURIComponent(xml);
+        downloadLink.download = rootName + ".xml";
+        downloadLink.click();
+    }
+
+    function showXML(tableID) {
+        let table = document.getElementById(tableID);
+        let xml = '<?xml version="1.0" encoding="UTF-8"?><Root>';
+
+        let headers = [];
+        for (let i = 0; i < table.rows[0].cells.length - 1; i++) {
+            headers[i] = table.rows[0].cells[i].innerText.trim().replace(/\s/g, '_');
+        }
+
+        for (let i = 1; i < table.rows.length; i++) {
+            let row = table.rows[i];
+            xml += '<Record>';
+            for (let j = 0; j < headers.length; j++) {
+                xml += '<' + headers[j] + '>';
+                xml += row.cells[j].innerText.trim();
+                xml += '</' + headers[j] + '>';
+            }
+            xml += '</Record>';
+        }
+
+        xml += '</Root>';
+        alert(xml);
+    }
+</script>
+
+</body>
+</html>
